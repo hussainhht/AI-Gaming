@@ -123,24 +123,184 @@
             <button onClick={onBack} className="px-4 py-2 bg-gray-300 rounded">Back</button>
             <button onClick={handleExport} className="px-4 py-2 bg-green-500 text-white rounded">Download ZIP</button>
           </div>
+  <title>GameGen - AI Gaming</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+  <div id="root"></div>
+
+  <script crossorigin src="https://unpkg.com/react@17/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+
+  <script type="text/babel">
+    const { useState, createContext, useContext } = React;
+
+    const AppContext = createContext();
+
+    function App() {
+      const [step, setStep] = useState(0);
+      const [template, setTemplate] = useState(null);
+      const [prompts, setPrompts] = useState({background:'', character:'', npcs:'', obstacles:''});
+      const [params, setParams] = useState({difficulty:5, speed:5, gravity:5, power:5});
+      const [music, setMusic] = useState('none');
+
+      const value = {step, setStep, template, setTemplate, prompts, setPrompts, params, setParams, music, setMusic};
+
+      return (
+        <AppContext.Provider value={value}>
+          <div className="container mx-auto p-4">
+            <h1 className="text-3xl font-bold mb-4 text-center">GameGen - No-Code Game Maker</h1>
+            {step===0 && <TemplateSelection />}
+            {step===1 && <Reskin />}
+            {step===2 && <Parameters />}
+            {step===3 && <Export />}
+          </div>
+        </AppContext.Provider>
+      );
+    }
+
+    function TemplateSelection() {
+      const templates = [
+        { id:'flappy', name:'Flappy Bird', img:'https://placehold.co/300x200?text=Flappy+Bird' },
+        { id:'runner', name:'Speed Runner', img:'https://placehold.co/300x200?text=Speed+Runner' },
+        { id:'whack', name:'Whack-a-Mole', img:'https://placehold.co/300x200?text=Whack-a-Mole' },
+        { id:'match3', name:'Match-3', img:'https://placehold.co/300x200?text=Match-3' },
+        { id:'crossy', name:'Crossy Road', img:'https://placehold.co/300x200?text=Crossy+Road' }
+      ];
+      const { setStep, setTemplate } = useContext(AppContext);
+
+      return (
+        <div>
+          <h2 className="text-xl font-semibold mb-2">Select a Game Template</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {templates.map(t => (
+              <div key={t.id} className="bg-white rounded shadow">
+                <img src={t.img} alt={t.name} className="w-full h-40 object-cover rounded-t" />
+                <div className="p-4 text-center">
+                  <h3 className="font-bold mb-2">{t.name}</h3>
+                  <button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={() => { setTemplate(t); setStep(1); }}>
+                    Customize
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       );
     }
 
-    function App() {
-      const [step, setStep] = React.useState(0);
-      const [template, setTemplate] = React.useState(null);
-      const [prompts, setPrompts] = React.useState({ background: '', characters: '', npcs: '', obstacles: '' });
-      const [params, setParams] = React.useState({ difficulty: 5, speed: 5, gravity: 5, power: 5 });
-      const [music, setMusic] = React.useState('');
+    function Reskin() {
+      const { prompts, setPrompts, setStep, template } = useContext(AppContext);
+      const handleChange = (e) => {
+        setPrompts({ ...prompts, [e.target.name]: e.target.value });
+      };
 
-      if (step === 0) return <Home onSelect={t => { setTemplate(t); setStep(1); }} />;
-      if (step === 1) return <Reskin prompts={prompts} setPrompts={setPrompts} onNext={() => setStep(2)} onBack={() => setStep(0)} />;
-      if (step === 2) return <Parameters params={params} setParams={setParams} music={music} setMusic={setMusic} onNext={() => setStep(3)} onBack={() => setStep(1)} />;
-      return <Export template={template} prompts={prompts} params={params} music={music} onBack={() => setStep(2)} />;
+      return (
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold">Reskin: {template.name}</h2>
+          {['background','character','npcs','obstacles'].map(field => (
+            <div key={field}>
+              <label className="block font-medium capitalize">{field}</label>
+              <textarea name={field} value={prompts[field]} onChange={handleChange} className="w-full border p-2" rows="2" />
+            </div>
+          ))}
+          <button className="bg-green-500 text-white px-4 py-2 rounded" onClick={() => setStep(2)}>Next: Parameters</button>
+        </div>
+      );
     }
 
-    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    function Parameters() {
+      const { params, setParams, setStep, music, setMusic } = useContext(AppContext);
+
+      const update = key => e => setParams({ ...params, [key]: parseInt(e.target.value, 10) });
+
+      const suggest = () => {
+        const diff = params.difficulty;
+        setParams({
+          difficulty: diff,
+          speed: diff * 2,
+          gravity: diff,
+          power: 11 - diff
+        });
+      };
+
+      return (
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold">Game Parameters</h2>
+          <div>
+            <label className="block font-medium">Difficulty: {params.difficulty}</label>
+            <input type="range" min="1" max="10" value={params.difficulty} onChange={update('difficulty')} className="w-full" />
+          </div>
+          <div>
+            <label className="block font-medium">Speed: {params.speed}</label>
+            <input type="range" min="1" max="20" value={params.speed} onChange={update('speed')} className="w-full" />
+          </div>
+          <div>
+            <label className="block font-medium">Gravity: {params.gravity}</label>
+            <input type="range" min="1" max="20" value={params.gravity} onChange={update('gravity')} className="w-full" />
+          </div>
+          <div>
+            <label className="block font-medium">Power-Up Frequency: {params.power}</label>
+            <input type="range" min="1" max="10" value={params.power} onChange={update('power')} className="w-full" />
+          </div>
+          <div>
+            <label className="block font-medium">Background Music</label>
+            <select value={music} onChange={e => setMusic(e.target.value)} className="border p-2">
+              <option value="none">None</option>
+              <option value="ai">AI Generated (sample)</option>
+            </select>
+          </div>
+          <div className="flex gap-2">
+            <button className="bg-gray-200 px-4 py-2 rounded" onClick={suggest}>Suggest</button>
+            <button className="bg-green-500 text-white px-4 py-2 rounded" onClick={() => setStep(3)}>Next: Export</button>
+          </div>
+        </div>
+      );
+    }
+
+    function Export() {
+      const { template, prompts, params, music } = useContext(AppContext);
+
+      const downloadZip = async () => {
+        const zip = new JSZip();
+        const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>${template.name}</title>
+</head>
+<body>
+<h1>${template.name}</h1>
+<p>Background: ${prompts.background}</p>
+<p>Character: ${prompts.character}</p>
+<p>NPCs: ${prompts.npcs}</p>
+<p>Obstacles: ${prompts.obstacles}</p>
+<p>Speed: ${params.speed}</p>
+<p>Gravity: ${params.gravity}</p>
+<p>Power-Ups: ${params.power}</p>
+${music === 'ai' ? '<audio controls autoplay src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"></audio>' : ''}
+<script>console.log('Game would start here');</script>
+</body>
+</html>`;
+        zip.file('index.html', html.trim());
+        const blob = await zip.generateAsync({type:'blob'});
+        saveAs(blob, 'game.zip');
+      };
+
+      return (
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold">Export Your Game</h2>
+          <button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={downloadZip}>
+            Download ZIP
+          </button>
+        </div>
+      );
+    }
+
   </script>
 </body>
 </html>
