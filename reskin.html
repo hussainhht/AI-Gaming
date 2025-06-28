@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Reskin Prompt</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            max-width: 400px;
+        }
+        label {
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        input[type="text"], textarea {
+            padding: 8px;
+            font-size: 1rem;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px;
+            font-size: 1rem;
+        }
+        .output {
+            margin-top: 20px;
+            background-color: #f4f4f4;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <h1>AI Reskin Prompt Generator</h1>
+    <form id="reskin-form">
+        <label for="background">Background</label>
+        <textarea id="background" name="background" rows="2" placeholder="Describe the new background"></textarea>
+
+        <label for="character">Character</label>
+        <textarea id="character" name="character" rows="2" placeholder="Describe the player character"></textarea>
+
+        <label for="npcs">NPCs</label>
+        <textarea id="npcs" name="npcs" rows="2" placeholder="Describe the non-player characters"></textarea>
+
+        <label for="obstacles">Obstacles</label>
+        <textarea id="obstacles" name="obstacles" rows="2" placeholder="Describe the obstacles"></textarea>
+
+        <button type="button" onclick="generatePrompt()">Create Prompt</button>
+    </form>
+
+    <div class="output" id="output" hidden>
+        <strong>Your combined AI prompt:</strong>
+        <pre id="prompt-text"></pre>
+    </div>
+
+    <script>
+        function generatePrompt() {
+            const background = document.getElementById('background').value.trim();
+            const character = document.getElementById('character').value.trim();
+            const npcs = document.getElementById('npcs').value.trim();
+            const obstacles = document.getElementById('obstacles').value.trim();
+
+            const promptParts = [];
+            if (background) promptParts.push(`Background: ${background}`);
+            if (character) promptParts.push(`Character: ${character}`);
+            if (npcs) promptParts.push(`NPCs: ${npcs}`);
+            if (obstacles) promptParts.push(`Obstacles: ${obstacles}`);
+
+            const finalPrompt = promptParts.join('\n');
+            const output = document.getElementById('output');
+            const promptText = document.getElementById('prompt-text');
+            promptText.textContent = finalPrompt || 'No prompt entered.';
+            output.hidden = false;
+        }
+    </script>
+</body>
+</html>
