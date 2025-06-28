@@ -1,9 +1,12 @@
 {
   "name": "ai-gaming",
   "version": "1.0.0",
-  "description": "i will meak a web ai meaker giming",
+  "description": "i will make a web AI game maker",
   "main": "packageGame.js",
   "scripts": {
+    "start": "vite",
+    "dev": "vite",
+    "build": "vite build",
     "test": "node testPackage.js"
   },
   "keywords": [],
@@ -14,5 +17,8 @@
     "jszip": "^3.10.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "vite": "^7.0.0"
   }
 }
