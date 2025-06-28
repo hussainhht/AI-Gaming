@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Settings</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        label { display: block; margin-bottom: 10px; }
+        .value { margin-left: 8px; font-weight: bold; }
+        input[type=range] { width: 300px; }
+    </style>
+</head>
+<body>
+    <h1>Adjust Game Parameters</h1>
+    <form id="game-settings">
+        <label>
+            Speed:
+            <input type="range" id="speed" min="0" max="10" value="5">
+            <span class="value" id="speed-value">5</span>
+        </label>
+        <label>
+            Gravity:
+            <input type="range" id="gravity" min="0" max="10" value="5">
+            <span class="value" id="gravity-value">5</span>
+        </label>
+        <label>
+            Obstacle Frequency:
+            <input type="range" id="obstacle" min="0" max="10" value="5">
+            <span class="value" id="obstacle-value">5</span>
+        </label>
+    </form>
+    <script>
+        const params = {
+            speed: 5,
+            gravity: 5,
+            obstacle: 5
+        };
+
+        function bindInput(id, key) {
+            const input = document.getElementById(id);
+            const valueEl = document.getElementById(`${id}-value`);
+            input.addEventListener('input', () => {
+                params[key] = parseFloat(input.value);
+                valueEl.textContent = input.value;
+                console.log('Updated', key, params[key]);
+            });
+        }
+
+        ['speed', 'gravity', 'obstacle'].forEach(k => bindInput(k, k));
+    </script>
+</body>
+</html>
