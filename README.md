@@ -70,6 +70,24 @@ Open `index.html` in your browser to launch the GameGen interface. Follow the
 steps to choose a template, reskin assets, adjust parameters, and finally
 download a ready-to-play ZIP package.
 
+## How to Run the Project
+
+1. Ensure **Node.js** is installed on your machine.
+2. Install the dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
+   or
+   ```bash
+   npm start
+   ```
+4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+5. Run `npm test` to verify the export functionality.
+
 ---
 
 ## 📌 ملاحظات
