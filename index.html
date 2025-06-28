@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GameGen</title>
+=======
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GameGen</title>
@@ -9,6 +13,133 @@
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+  <div id="root" class="p-4"></div>
+
+  <script type="text/babel">
+    const { useState, createContext, useContext } = React;
+
+    // Context to store game state
+    const GameContext = createContext();
+
+    const templates = [
+      { id: 'flappy', name: 'Flappy Bird', img: 'https://placehold.co/200x150?text=Flappy' },
+      { id: 'runner', name: 'Speed Runner', img: 'https://placehold.co/200x150?text=Runner' },
+      { id: 'whack', name: 'Whack-a-Mole', img: 'https://placehold.co/200x150?text=Whack' },
+      { id: 'match3', name: 'Match-3', img: 'https://placehold.co/200x150?text=Match3' },
+      { id: 'crossy', name: 'Crossy Road', img: 'https://placehold.co/200x150?text=Crossy' },
+    ];
+
+    function App() {
+      const [step, setStep] = useState(0);
+      const [state, setState] = useState({ template: null, prompts: {}, params: { difficulty:5, speed:5, gravity:5, powerups:5 }, music:null });
+
+      return (
+        <GameContext.Provider value={{ state, setState, step, setStep }}>
+          <div className="max-w-3xl mx-auto bg-white shadow p-4 rounded">
+            {step === 0 && <TemplateSelect />}
+            {step === 1 && <ReskinPage />}
+            {step === 2 && <ParamsPage />}
+            {step === 3 && <ExportPage />}
+          </div>
+        </GameContext.Provider>
+      );
+    }
+
+    function TemplateSelect() {
+      const { setState, setStep } = useContext(GameContext);
+      return (
+        <div>
+          <h1 className="text-2xl font-bold mb-4">Choose a Game Template</h1>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {templates.map(t => (
+              <div key={t.id} className="border rounded p-2 flex flex-col items-center bg-gray-50">
+                <img src={t.img} alt={t.name} className="mb-2" />
+                <span className="font-semibold">{t.name}</span>
+                <button className="mt-2 px-2 py-1 bg-blue-500 text-white rounded" onClick={() => { setState(s => ({...s, template:t.id})); setStep(1); }}>Customize</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    function ReskinPage() {
+      const { state, setState, setStep } = useContext(GameContext);
+      const [background, setBackground] = useState('');
+      const [character, setCharacter] = useState('');
+      const [npcs, setNpcs] = useState('');
+      const [obstacles, setObstacles] = useState('');
+      const handleNext = () => {
+        setState(s => ({...s, prompts:{background, character, npcs, obstacles}}));
+        setStep(2);
+      };
+      return (
+        <div>
+          <h1 className="text-xl font-bold mb-2">Reskin: {state.template}</h1>
+          <div className="space-y-2">
+            <textarea className="w-full border p-2" placeholder="Background" value={background} onChange={e=>setBackground(e.target.value)} />
+            <textarea className="w-full border p-2" placeholder="Character" value={character} onChange={e=>setCharacter(e.target.value)} />
+            <textarea className="w-full border p-2" placeholder="NPCs" value={npcs} onChange={e=>setNpcs(e.target.value)} />
+            <textarea className="w-full border p-2" placeholder="Obstacles" value={obstacles} onChange={e=>setObstacles(e.target.value)} />
+          </div>
+          <button className="mt-4 px-4 py-2 bg-green-600 text-white rounded" onClick={handleNext}>Next</button>
+        </div>
+      );
+    }
+
+    function Slider({label, value, onChange}) {
+      return (
+        <div className="flex items-center space-x-2">
+          <label className="w-40">{label}</label>
+          <input type="range" min="0" max="10" value={value} onChange={e=>onChange(parseInt(e.target.value))} className="flex-1" />
+          <span>{value}</span>
+        </div>
+      );
+    }
+
+    function ParamsPage() {
+      const { state, setState, setStep } = useContext(GameContext);
+      const params = state.params;
+      const update = (key, val) => setState(s => ({...s, params:{...s.params, [key]:val}}));
+      const [music, setMusic] = useState(state.music || '');
+      const next = () => { setState(s=>({...s, music})); setStep(3); };
+      return (
+        <div className="space-y-4">
+          <h1 className="text-xl font-bold">Game Parameters</h1>
+          <Slider label="Difficulty" value={params.difficulty} onChange={v=>update('difficulty', v)} />
+          <Slider label="Speed" value={params.speed} onChange={v=>update('speed', v)} />
+          <Slider label="Gravity" value={params.gravity} onChange={v=>update('gravity', v)} />
+          <Slider label="Power-up Freq" value={params.powerups} onChange={v=>update('powerups', v)} />
+          <input className="w-full border p-2" placeholder="Background music prompt" value={music} onChange={e=>setMusic(e.target.value)} />
+          <button className="px-4 py-2 bg-green-600 text-white rounded" onClick={next}>Next</button>
+        </div>
+      );
+    }
+
+    function ExportPage() {
+      const { state, setStep } = useContext(GameContext);
+
+      const exportZip = async () => {
+        const zip = new JSZip();
+        const html = `<html><body><h1>${state.template} Game</h1></body></html>`;
+        zip.file('index.html', html);
+        const content = await zip.generateAsync({type:'blob'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(content);
+        a.download = 'game.zip';
+        a.click();
+      };
+
+      return (
+        <div>
+          <h1 className="text-xl font-bold mb-2">Export</h1>
+          <p className="mb-4">Click below to package your game.</p>
+          <button className="px-4 py-2 bg-blue-600 text-white rounded" onClick={exportZip}>Download ZIP</button>
+          <button className="ml-2 px-4 py-2 bg-gray-300 rounded" onClick={()=>setStep(0)}>Start Over</button>
+=======
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 </head>
 <body class="bg-gray-100">
@@ -310,6 +441,7 @@ ${music === 'ai' ? '<audio controls autoplay src="https://www.soundhelix.com/exa
       );
     }
 
+    ReactDOM.render(<App />, document.getElementById('root'));
   </script>
 </body>
 </html>
