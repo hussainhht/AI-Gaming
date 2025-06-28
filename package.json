@@ -1,0 +1,16 @@
+{
+  "name": "ai-gaming",
+  "version": "1.0.0",
+  "description": "i will meak a web ai meaker giming",
+  "main": "packageGame.js",
+  "scripts": {
+    "test": "node testPackage.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "jszip": "^3.10.1"
+  }
+}
