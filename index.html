@@ -3,6 +3,126 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GameGen</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+  <div id="root" class="max-w-3xl mx-auto py-6"></div>
+
+  <script type="text/babel">
+    const templates = [
+      { id: 'flappy', name: 'Flappy Bird', img: 'https://via.placeholder.com/200x120?text=Flappy+Bird' },
+      { id: 'runner', name: 'Speed Runner', img: 'https://via.placeholder.com/200x120?text=Speed+Runner' },
+      { id: 'whack', name: 'Whack-a-Mole', img: 'https://via.placeholder.com/200x120?text=Whack-a-Mole' },
+      { id: 'match3', name: 'Match-3', img: 'https://via.placeholder.com/200x120?text=Match-3' },
+      { id: 'crossy', name: 'Crossy Road', img: 'https://via.placeholder.com/200x120?text=Crossy+Road' }
+    ];
+
+    function Home({ onSelect }) {
+      return (
+        <div className="p-4">
+          <h1 className="text-2xl font-bold mb-4 text-center">Choose a Game Template</h1>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {templates.map(t => (
+              <div key={t.id} className="bg-white rounded shadow p-3 flex flex-col items-center">
+                <img src={t.img} alt={t.name} className="h-32 w-full object-cover rounded" />
+                <div className="mt-2 font-semibold">{t.name}</div>
+                <button onClick={() => onSelect(t)} className="mt-2 bg-blue-500 text-white px-3 py-1 rounded">Customize</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    function Reskin({ prompts, setPrompts, onNext, onBack }) {
+      const update = e => setPrompts({ ...prompts, [e.target.name]: e.target.value });
+      return (
+        <div className="p-4">
+          <h1 className="text-2xl font-bold mb-4 text-center">Reskin Game</h1>
+          <div className="space-y-4">
+            <div>
+              <label className="font-semibold">Background</label>
+              <textarea name="background" rows="2" value={prompts.background} onChange={update} className="w-full border p-2 mt-1" placeholder="Describe the background" />
+            </div>
+            <div>
+              <label className="font-semibold">Characters</label>
+              <textarea name="characters" rows="2" value={prompts.characters} onChange={update} className="w-full border p-2 mt-1" placeholder="Describe main characters" />
+            </div>
+            <div>
+              <label className="font-semibold">NPCs</label>
+              <textarea name="npcs" rows="2" value={prompts.npcs} onChange={update} className="w-full border p-2 mt-1" placeholder="Describe NPCs" />
+            </div>
+            <div>
+              <label className="font-semibold">Obstacles</label>
+              <textarea name="obstacles" rows="2" value={prompts.obstacles} onChange={update} className="w-full border p-2 mt-1" placeholder="Describe obstacles" />
+            </div>
+          </div>
+          <div className="mt-6 flex justify-between">
+            <button onClick={onBack} className="px-4 py-2 bg-gray-300 rounded">Back</button>
+            <button onClick={onNext} className="px-4 py-2 bg-blue-500 text-white rounded">Next</button>
+          </div>
+        </div>
+      );
+    }
+
+    function Parameters({ params, setParams, music, setMusic, onNext, onBack }) {
+      const update = (name, value) => setParams({ ...params, [name]: parseFloat(value) });
+      return (
+        <div className="p-4">
+          <h1 className="text-2xl font-bold mb-4 text-center">Game Parameters</h1>
+          <div className="space-y-4">
+            <div>
+              <label className="font-semibold">Difficulty: {params.difficulty}</label>
+              <input type="range" min="1" max="10" value={params.difficulty} onChange={e => update('difficulty', e.target.value)} className="w-full" />
+            </div>
+            <div>
+              <label className="font-semibold">Speed: {params.speed}</label>
+              <input type="range" min="1" max="10" value={params.speed} onChange={e => update('speed', e.target.value)} className="w-full" />
+            </div>
+            <div>
+              <label className="font-semibold">Gravity: {params.gravity}</label>
+              <input type="range" min="1" max="10" value={params.gravity} onChange={e => update('gravity', e.target.value)} className="w-full" />
+            </div>
+            <div>
+              <label className="font-semibold">Power-up Frequency: {params.power}</label>
+              <input type="range" min="1" max="10" value={params.power} onChange={e => update('power', e.target.value)} className="w-full" />
+            </div>
+            <div>
+              <label className="font-semibold">Background Music Prompt (optional)</label>
+              <input type="text" value={music} onChange={e => setMusic(e.target.value)} className="w-full border p-2 mt-1" placeholder="Describe desired music" />
+            </div>
+          </div>
+          <div className="mt-6 flex justify-between">
+            <button onClick={onBack} className="px-4 py-2 bg-gray-300 rounded">Back</button>
+            <button onClick={onNext} className="px-4 py-2 bg-blue-500 text-white rounded">Export</button>
+          </div>
+        </div>
+      );
+    }
+
+    function Export({ template, prompts, params, music, onBack }) {
+      const handleExport = () => {
+        const zip = new JSZip();
+        const html = `<!DOCTYPE html><html><body><h1>${template.name}</h1><p>Custom game ready to play offline.</p></body></html>`;
+        zip.file('index.html', html);
+        zip.generateAsync({ type: 'blob' }).then(content => {
+          saveAs(content, `${template.id}-game.zip`);
+        });
+      };
+      return (
+        <div className="p-4">
+          <h1 className="text-2xl font-bold mb-4 text-center">Export Game</h1>
+          <p className="mb-4 text-center">Click below to download your customized game package.</p>
+          <div className="flex justify-between">
+            <button onClick={onBack} className="px-4 py-2 bg-gray-300 rounded">Back</button>
+            <button onClick={handleExport} className="px-4 py-2 bg-green-500 text-white rounded">Download ZIP</button>
+          </div>
   <title>GameGen - AI Gaming</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
@@ -181,7 +301,6 @@ ${music === 'ai' ? '<audio controls autoplay src="https://www.soundhelix.com/exa
       );
     }
 
-    ReactDOM.render(<App />, document.getElementById('root'));
   </script>
 </body>
 </html>
