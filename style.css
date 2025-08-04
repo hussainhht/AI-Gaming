@@ -1,0 +1,74 @@
+/* Base styling for the page */
+body {
+  font-family: 'Tajawal', sans-serif;
+  background: linear-gradient(to bottom right, #1e3c72, #2a5298);
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  color: #fff;
+}
+
+.container {
+  text-align: center;
+  background-color: rgba(0, 0, 0, 0.4);
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+}
+
+.title {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+#gameCanvas {
+  display: block;
+  margin: 10px auto;
+  background-color: #0e1f44;
+  border: 2px solid #73b700;
+  border-radius: 8px;
+}
+
+.scoreboard {
+  display: flex;
+  justify-content: space-between;
+  width: 200px;
+  margin: 10px auto;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+#highScore::before {
+  content: 'الأعلى: ';
+}
+
+.controls {
+  margin: 10px 0;
+}
+
+.controls button {
+  margin: 0 5px;
+  padding: 8px 16px;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #fff;
+  background-color: #007acc;
+  transition: background-color 0.3s ease;
+}
+
+.controls button:hover {
+  background-color: #005fa3;
+}
+
+.instructions {
+  font-size: 0.9rem;
+  margin-top: 10px;
+  opacity: 0.8;
+}
