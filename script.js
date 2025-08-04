@@ -89,8 +89,8 @@ function update() {
   if (newHead.x === food.x && newHead.y === food.y) {
     score += 10;
     scoreEl.textContent = score;
-    // Increase speed slightly but not too high (min 60ms)
-    if (gameSpeed > 60) {
+    // Increase speed slightly but not too high (min 100ms)
+    if (gameSpeed > 100) {
       gameSpeed -= 5;
     }
     food = randomFood();
